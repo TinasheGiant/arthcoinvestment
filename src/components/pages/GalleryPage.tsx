@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { PageId, GalleryImage } from '../../types';
-import { GALLERY_ITEMS, COMPANY_INFO } from '../../data/timberData';
+import { useData } from '../../context/DataContext';
 import { 
   Eye, 
   X, 
   ArrowRight, 
   Camera, 
-  CheckCircle2, 
-  Phone, 
-  Layers, 
-  Download,
-  Share2,
-  TreePine
+  Video, 
+  Play, 
+  ExternalLink 
 } from 'lucide-react';
 
 interface GalleryPageProps {
@@ -19,20 +16,22 @@ interface GalleryPageProps {
 }
 
 export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
+  const { images, videos } = useData();
+  const [mediaType, setMediaType] = useState<'all' | 'photos' | 'videos'>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
   const categories = [
-    { id: 'all', label: 'All Photos' },
+    { id: 'all', label: 'All Categories' },
     { id: 'operations', label: 'Sawmill Operations & LT15' },
     { id: 'products', label: 'Sawn Timber Products' },
     { id: 'yard', label: 'Yard & Log Stacking' },
     { id: 'sustainability', label: 'Forestry & Residue Recovery' },
   ];
 
-  const filteredItems = activeCategory === 'all'
-    ? GALLERY_ITEMS
-    : GALLERY_ITEMS.filter((item) => item.category === activeCategory);
+  const filteredImages = activeCategory === 'all'
+    ? images
+    : images.filter((item) => item.category === activeCategory);
 
   return (
     <div className="space-y-12 py-10">
@@ -41,7 +40,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
         <div className="bg-[#152B1E] rounded-2xl text-white p-8 sm:p-12 relative overflow-hidden border border-[#274B35]">
           <div className="relative z-10 max-w-3xl space-y-4">
             <span className="text-xs uppercase tracking-widest text-[#E2C08D] font-bold">
-              Visual Portfolio
+              Visual Portfolio & Video Footage
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
               Arthco Sawmill & Timber Gallery
@@ -56,99 +55,205 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Category Filter Tabs */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#EBF3ED] border border-[#CDE0D3] rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#20402E]">
-          <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#25D366] shrink-0 animate-pulse" />
-            <span className="font-bold">On-Site Facility Photos:</span>
-            <span>Featuring our Wood-Mizer LT15 sawmill line, sawn timber stacks, and active Nyakamete yard in Mutare.</span>
-          </div>
-          <span className="text-[11px] font-semibold text-[#C28846] bg-white px-2.5 py-1 rounded-md border border-[#D5E2D9]">
-            Mutare, Zimbabwe
-          </span>
+      {/* Media Type & Category Filter Tabs */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        {/* Photos vs Videos toggle */}
+        <div className="flex items-center justify-center gap-2 border-b border-[#D5E2D9] pb-4">
+          <button
+            onClick={() => setMediaType('all')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              mediaType === 'all'
+                ? 'bg-[#14261C] text-white shadow-sm'
+                : 'bg-white text-[#4A6454] border border-[#D5E2D9] hover:bg-[#F2F6F3]'
+            }`}
+          >
+            All Media ({images.length + videos.length})
+          </button>
+          <button
+            onClick={() => setMediaType('photos')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all inline-flex items-center gap-1.5 ${
+              mediaType === 'photos'
+                ? 'bg-[#14261C] text-white shadow-sm'
+                : 'bg-white text-[#4A6454] border border-[#D5E2D9] hover:bg-[#F2F6F3]'
+            }`}
+          >
+            <Camera className="w-3.5 h-3.5" />
+            Photos ({images.length})
+          </button>
+          <button
+            onClick={() => setMediaType('videos')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all inline-flex items-center gap-1.5 ${
+              mediaType === 'videos'
+                ? 'bg-[#14261C] text-white shadow-sm'
+                : 'bg-white text-[#4A6454] border border-[#D5E2D9] hover:bg-[#F2F6F3]'
+            }`}
+          >
+            <Video className="w-3.5 h-3.5" />
+            Videos ({videos.length})
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg text-xs uppercase tracking-wider font-bold transition-all ${
-                activeCategory === cat.id
-                  ? 'bg-[#1E432E] text-white shadow-md border border-[#2C593F]'
-                  : 'bg-white text-[#4A6454] border border-[#D5E2D9] hover:bg-[#F2F6F3]'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+        {/* Categories (for photos) */}
+        {mediaType !== 'videos' && (
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeCategory === cat.id
+                    ? 'bg-[#1E432E] text-white shadow-xs'
+                    : 'bg-white text-[#4A6454] border border-[#D5E2D9] hover:bg-[#F2F6F3]'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Gallery Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedImage(item)}
-              className="group bg-white rounded-xl overflow-hidden border border-[#D8E3DC] shadow-sm hover:shadow-lg hover:border-[#2C593F] transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div className="relative h-64 overflow-hidden bg-[#16291E]">
-                <img
-                  src={item.url}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+      {/* Videos Section */}
+      {(mediaType === 'all' || mediaType === 'videos') && videos.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-[#14261C] flex items-center gap-2">
+              <Video className="w-5 h-5 text-[#2C593F]" />
+              Production & Yard Operational Footage
+            </h2>
+            <span className="text-xs text-[#526B5C] font-semibold">
+              {videos.length} videos available
+            </span>
+          </div>
 
-                {item.highlight && (
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded bg-[#13251B]/90 text-[#E2C08D] text-[10px] uppercase font-bold tracking-wider border border-[#30533C]/60 backdrop-blur-sm">
-                    {item.highlight}
-                  </span>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.map(v => (
+              <div
+                key={v.id}
+                className="bg-white rounded-xl border border-[#D8E3DC] overflow-hidden shadow-sm flex flex-col justify-between"
+              >
+                <div className="relative aspect-video bg-[#0E1A14]">
+                  {v.embedUrl ? (
+                    <iframe
+                      src={v.embedUrl}
+                      title={v.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="w-full h-full relative group flex items-center justify-center">
+                      <img
+                        src={v.thumbnailUrl || '/images/arthco_sawmill_yard.jpg'}
+                        alt={v.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="w-12 h-12 rounded-full bg-white/90 text-[#2C593F] flex items-center justify-center shadow-lg">
+                        <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
 
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <span className="text-[10px] text-[#A6C5B3] uppercase tracking-wider font-semibold block mb-0.5">
-                    {item.categoryLabel}
+                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-white backdrop-blur-xs">
+                    {v.category}
                   </span>
-                  <h3 className="text-sm font-bold text-white group-hover:text-[#E2C08D] transition-colors leading-snug">
-                    {item.title}
-                  </h3>
                 </div>
 
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 rounded-full bg-white/90 text-[#142318] flex items-center justify-center shadow">
-                    <Eye className="w-4 h-4" />
+                <div className="p-4 space-y-2">
+                  <h3 className="text-sm font-bold text-[#14261C] leading-snug">{v.title}</h3>
+                  <p className="text-xs text-[#526B5C] line-clamp-2">{v.description}</p>
+                  <div className="pt-2 flex items-center justify-between text-xs">
+                    <span className="text-[11px] font-bold text-[#2C593F]">Mutare Milling</span>
+                    <a
+                      href={v.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-[#0F5B9E] font-semibold hover:underline inline-flex items-center gap-1"
+                    >
+                      Watch <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-              <div className="p-4 bg-white">
-                <p className="text-xs text-[#526B5C] line-clamp-2">
-                  {item.description}
-                </p>
-                <div className="mt-3 pt-3 border-t border-[#EDF3EF] flex items-center justify-between text-xs">
-                  <span className="text-[11px] font-bold text-[#1E432E] uppercase">
-                    Mutare Facility
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#C28846] flex items-center">
-                    Click to view <ArrowRight className="w-3 h-3 ml-1" />
-                  </span>
+      {/* Gallery Images Grid */}
+      {(mediaType === 'all' || mediaType === 'photos') && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          {mediaType === 'all' && (
+            <h2 className="text-xl font-bold text-[#14261C] flex items-center gap-2 pt-4">
+              <Camera className="w-5 h-5 text-[#2C593F]" />
+              Sawmill & Yard Photo Showcase
+            </h2>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredImages.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setSelectedImage(item)}
+                className="group bg-white rounded-xl overflow-hidden border border-[#D8E3DC] shadow-sm hover:shadow-lg hover:border-[#2C593F] transition-all cursor-pointer flex flex-col justify-between"
+              >
+                <div className="relative h-64 overflow-hidden bg-[#16291E]">
+                  <img
+                    src={item.url}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/arthco_sawmill_yard.jpg';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+
+                  {item.highlight && (
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded bg-[#13251B]/90 text-[#E2C08D] text-[10px] uppercase font-bold tracking-wider border border-[#30533C]/60 backdrop-blur-xs">
+                      {item.highlight}
+                    </span>
+                  )}
+
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <span className="text-[10px] text-[#A6C5B3] uppercase tracking-wider font-semibold block mb-0.5">
+                      {item.categoryLabel || item.category}
+                    </span>
+                    <h3 className="text-sm font-bold text-white group-hover:text-[#E2C08D] transition-colors leading-snug">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full bg-white/90 text-[#142318] flex items-center justify-center shadow">
+                      <Eye className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white">
+                  <p className="text-xs text-[#526B5C] line-clamp-2">
+                    {item.description}
+                  </p>
+                  <div className="mt-3 pt-3 border-t border-[#EDF3EF] flex items-center justify-between text-xs">
+                    <span className="text-[11px] font-bold text-[#1E432E] uppercase">
+                      Mutare Facility
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#C28846] flex items-center">
+                      Click to view <ArrowRight className="w-3 h-3 ml-1" />
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* LIGHTBOX MODAL */}
       {selectedImage && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
           onClick={() => setSelectedImage(null)}
         >
           <div 
@@ -160,7 +265,9 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
                 src={selectedImage.url}
                 alt={selectedImage.title}
                 className="w-full h-full object-contain"
-                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/arthco_sawmill_yard.jpg';
+                }}
               />
               <button
                 onClick={() => setSelectedImage(null)}
@@ -175,7 +282,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#244230] pb-4">
                 <div>
                   <span className="text-xs uppercase font-bold text-[#E2C08D] tracking-wider">
-                    {selectedImage.categoryLabel}
+                    {selectedImage.categoryLabel || selectedImage.category}
                   </span>
                   <h3 className="text-xl sm:text-2xl font-extrabold text-white mt-0.5">
                     {selectedImage.title}

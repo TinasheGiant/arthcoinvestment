@@ -1,43 +1,56 @@
 import React, { useState } from 'react';
-import { Calculator, Send, CheckCircle2, Copy, ArrowRight } from 'lucide-react';
-import { COMPANY_INFO } from '../data/timberData';
+import { Calculator, Send, CheckCircle2, Copy, Tag, Info } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 export const TimberCalculator: React.FC = () => {
+  const { calculatorSettings } = useData();
   const [thickness, setThickness] = useState<number>(38); // mm
   const [width, setWidth] = useState<number>(114); // mm
   const [length, setLength] = useState<number>(4.8); // meters
   const [pieces, setPieces] = useState<number>(50);
-  const [woodType, setWoodType] = useState<string>('Structural Pine');
+  const [woodType, setWoodType] = useState<string>('Structural Pine (38/50mm)');
+  const [includeWastage, setIncludeWastage] = useState<boolean>(true);
   const [copied, setCopied] = useState(false);
 
-  // Common presets
-  const presets = [
-    { label: '38 x 38 (Battens)', t: 38, w: 38, l: 3.6 },
-    { label: '38 x 76 (Purlins)', t: 38, w: 76, l: 4.8 },
-    { label: '38 x 114 (Rafters)', t: 38, w: 114, l: 4.8 },
-    { label: '38 x 152 (Joists)', t: 38, w: 152, l: 5.4 },
-    { label: '50 x 76 (Wall Plates)', t: 50, w: 76, l: 4.8 },
-    { label: '25 x 150 (Planks)', t: 25, w: 150, l: 3.6 },
-  ];
+  // Dynamic presets from backend
+  const presets = calculatorSettings.presets && calculatorSettings.presets.length > 0
+    ? calculatorSettings.presets
+    : [
+        { id: '1', label: '38 x 38 (Battens)', thickness: 38, width: 38, length: 3.6, defaultPieces: 100, category: 'Roofing' },
+        { id: '2', label: '38 x 76 (Purlins)', thickness: 38, width: 76, length: 4.8, defaultPieces: 60, category: 'Roofing' },
+        { id: '3', label: '38 x 114 (Rafters)', thickness: 38, width: 114, length: 4.8, defaultPieces: 50, category: 'Structural' },
+        { id: '4', label: '38 x 152 (Joists)', thickness: 38, width: 152, length: 5.4, defaultPieces: 30, category: 'Structural' },
+        { id: '5', label: '50 x 76 (Wall Plates)', thickness: 50, width: 76, length: 4.8, defaultPieces: 40, category: 'Structural' },
+        { id: '6', label: '25 x 150 (Planks)', thickness: 25, width: 150, length: 3.6, defaultPieces: 40, category: 'Boards' },
+      ];
 
   // Calculations
   // Volume in m3 = (Thickness/1000) * (Width/1000) * Length * Pieces
-  const volumePerPiece = (thickness / 1000) * (width / 1000) * length;
-  const totalVolumeM3 = volumePerPiece * pieces;
+  const rawVolumePerPiece = (thickness / 1000) * (width / 1000) * length;
+  const baseVolumeM3 = rawVolumePerPiece * pieces;
+  const wastageFactor = includeWastage ? 1 + (calculatorSettings.defaultWastagePercent / 100) : 1;
+  const finalVolumeM3 = baseVolumeM3 * wastageFactor;
   const totalLinearMeters = length * pieces;
 
-  const quoteMessage = `Hello Arthco Timbers (for your quality timber), I need a quote for:
+  // Pricing from backend settings
+  const ratePerM3 = calculatorSettings.defaultRatePerM3 || 310;
+  const estimatedExMillPrice = finalVolumeM3 * ratePerM3;
+
+  const quoteMessage = `Hello Arthco Timbers (for your quality timber), I need a quote:
 - Product: ${woodType}
 - Dimensions: ${thickness}mm x ${width}mm
 - Length: ${length}m
 - Quantity: ${pieces} pieces
-- Total Volume: ${totalVolumeM3.toFixed(3)} m³ (${totalLinearMeters.toFixed(1)} linear meters)
-- Delivery to: [Specify location in Zimbabwe]`;
+- Total Linear: ${totalLinearMeters.toFixed(1)} linear meters
+- Total Volume: ${finalVolumeM3.toFixed(3)} m³ ${includeWastage ? `(includes ${calculatorSettings.defaultWastagePercent}% waste allowance)` : ''}
+- Indicative Value: ~$${estimatedExMillPrice.toFixed(2)} USD (@ $${ratePerM3}/m³)
+- Delivery to: [Specify site/town in Zimbabwe]`;
 
-  const handlePresetClick = (p: typeof presets[0]) => {
-    setThickness(p.t);
-    setWidth(p.w);
-    setLength(p.l);
+  const handlePresetClick = (p: { thickness: number; width: number; length: number; defaultPieces?: number }) => {
+    setThickness(p.thickness);
+    setWidth(p.width);
+    setLength(p.length);
+    if (p.defaultPieces) setPieces(p.defaultPieces);
   };
 
   const handleCopy = () => {
@@ -46,14 +59,15 @@ export const TimberCalculator: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const whatsappUrl = `https://wa.me/263773412197?text=${encodeURIComponent(quoteMessage)}`;
+  const hotline = calculatorSettings.whatsappHotline || '263773412197';
+  const whatsappUrl = `https://wa.me/${hotline}?text=${encodeURIComponent(quoteMessage)}`;
 
   return (
-    <div className="bg-[#FFFFFF] rounded-xl border border-[#D9E4DD] shadow-sm p-6 sm:p-8">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#D9E4DD] shadow-sm p-6 sm:p-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-[#E8EFEA] gap-4">
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#EBF3ED] text-[#224A32] text-xs font-bold uppercase tracking-wider mb-1.5">
-            <Calculator className="w-3.5 h-3.5" />
+            <Calculator className="w-3.5 h-3.5 text-[#2C593F]" />
             <span>Builder & Merchant Utility</span>
           </div>
           <h3 className="text-xl font-bold text-[#14261C]">Timber Volume & Dimension Calculator</h3>
@@ -64,17 +78,17 @@ export const TimberCalculator: React.FC = () => {
 
         {/* Quick Presets */}
         <div className="w-full sm:w-auto">
-          <span className="text-[11px] font-semibold text-[#667E70] uppercase block mb-1">
-            Quick Size Presets:
+          <span className="text-[11px] font-semibold text-[#667E70] uppercase block mb-1.5">
+            Quick Sizing Presets:
           </span>
           <div className="flex flex-wrap gap-1.5">
             {presets.map((p) => (
               <button
-                key={p.label}
+                key={p.id || p.label}
                 type="button"
                 onClick={() => handlePresetClick(p)}
                 className={`text-xs px-2.5 py-1 rounded transition-colors font-medium border ${
-                  thickness === p.t && width === p.w
+                  thickness === p.thickness && width === p.width
                     ? 'bg-[#1E3B2A] text-white border-[#1E3B2A]'
                     : 'bg-[#F2F6F3] text-[#234130] border-[#DCE7E0] hover:bg-[#E2EDE5]'
                 }`}
@@ -163,26 +177,46 @@ export const TimberCalculator: React.FC = () => {
         </div>
       </div>
 
+      {/* Wastage factor toggle */}
+      <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#EBF2ED]">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="wastage-check"
+            checked={includeWastage}
+            onChange={(e) => setIncludeWastage(e.target.checked)}
+            className="w-4 h-4 text-[#2C593F] rounded border-[#CCD8D0] focus:ring-[#2C593F]"
+          />
+          <label htmlFor="wastage-check" className="text-xs text-[#2A4334] font-semibold cursor-pointer">
+            Include recommended site cutting allowance ({calculatorSettings.defaultWastagePercent || 10}%)
+          </label>
+        </div>
+        <div className="text-xs text-[#52685B] flex items-center gap-1">
+          <Tag className="w-3 h-3 text-[#2C593F]" />
+          <span>Indicative Rate: <strong className="text-[#14261C]">${ratePerM3}/m³</strong> ex-mill</span>
+        </div>
+      </div>
+
       {/* Calculated Results Box */}
-      <div className="bg-[#F5F8F6] rounded-xl p-5 border border-[#DEEAE2] grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+      <div className="bg-[#F5F8F6] rounded-xl p-5 border border-[#DEEAE2] grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
         <div>
           <span className="text-xs uppercase tracking-wider text-[#577262] font-semibold block">
             Total Sawn Volume
           </span>
           <div className="flex items-baseline space-x-1.5 mt-1">
             <span className="text-3xl font-extrabold text-[#173322]">
-              {totalVolumeM3.toFixed(3)}
+              {finalVolumeM3.toFixed(3)}
             </span>
-            <span className="text-sm font-bold text-[#3B664C]">m³ (Cubic Meters)</span>
+            <span className="text-sm font-bold text-[#3B664C]">m³</span>
           </div>
           <span className="text-xs text-[#70897B] block mt-0.5">
-            ≈ {(totalVolumeM3 * 423.77).toFixed(0)} Board Feet
+            ≈ {(finalVolumeM3 * 423.77).toFixed(0)} Board Feet
           </span>
         </div>
 
         <div>
           <span className="text-xs uppercase tracking-wider text-[#577262] font-semibold block">
-            Total Linear Run
+            Linear Distance
           </span>
           <div className="flex items-baseline space-x-1.5 mt-1">
             <span className="text-2xl font-bold text-[#173322]">
@@ -191,11 +225,26 @@ export const TimberCalculator: React.FC = () => {
             <span className="text-sm font-semibold text-[#3B664C]">Run Meters</span>
           </div>
           <span className="text-xs text-[#70897B] block mt-0.5">
-            {pieces} pcs @ {length}m ({thickness}mm x {width}mm)
+            {pieces} pcs @ {length}m
           </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2.5 justify-end">
+        <div>
+          <span className="text-xs uppercase tracking-wider text-[#577262] font-semibold block">
+            Est. Ex-Mill Price
+          </span>
+          <div className="flex items-baseline space-x-1.5 mt-1">
+            <span className="text-2xl font-extrabold text-[#C28846]">
+              ${estimatedExMillPrice.toFixed(2)}
+            </span>
+            <span className="text-xs font-bold text-[#526B5C]">USD</span>
+          </div>
+          <span className="text-[11px] text-[#70897B] block mt-0.5">
+            Subject to VAT & delivery
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 justify-end">
           <button
             onClick={handleCopy}
             className="inline-flex items-center justify-center px-3.5 py-2.5 rounded-lg border border-[#C5D5CB] bg-white text-[#203D2C] hover:bg-[#F2F6F3] text-xs font-bold transition-colors"
@@ -224,6 +273,13 @@ export const TimberCalculator: React.FC = () => {
           </a>
         </div>
       </div>
+
+      {calculatorSettings.disclaimer && (
+        <div className="mt-3 flex items-start gap-1.5 text-[11px] text-[#70897B]">
+          <Info className="w-3.5 h-3.5 text-[#2C593F] shrink-0 mt-0.5" />
+          <p>{calculatorSettings.disclaimer}</p>
+        </div>
+      )}
     </div>
   );
 };

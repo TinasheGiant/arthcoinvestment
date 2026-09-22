@@ -17,14 +17,31 @@ import {
   CheckCircle2, 
   MapPin, 
   Layers,
-  Sparkles
+  Sparkles,
+  Video,
+  Play
 } from 'lucide-react';
+import { useData } from '../../context/DataContext';
 
 interface HomePageProps {
   onNavigate: (page: PageId) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+  const { images, videos, services } = useData();
+
+  // Dynamic Spotlight Photos wired from backend
+  const spotlightPhotos = React.useMemo(() => {
+    const tagged = images.filter(img => img.placement === 'homepage_spotlight' || img.featured);
+    const remaining = images.filter(img => !tagged.some(t => t.id === img.id));
+    const combined = [...tagged, ...remaining];
+    return combined.slice(0, 4);
+  }, [images]);
+
+  // Dynamic Featured Video wired from backend
+  const featuredVideo = React.useMemo(() => {
+    return videos.find(v => v.placement === 'homepage' || v.featured) || videos[0];
+  }, [videos]);
   return (
     <div className="space-y-16 sm:space-y-24">
       {/* HERO SECTION */}
@@ -394,98 +411,97 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div 
-              onClick={() => onNavigate('gallery')}
-              className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F2016] border border-[#2A4D37] hover:border-[#E2C08D] transition-all"
-            >
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  src="/images/arthco_woodmizer_lt15.jpg"
-                  alt="Wood-Mizer LT15 Band Sawmill carriage"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[#E2C08D] text-[10px] uppercase font-bold backdrop-blur-sm">
-                  Wood-Mizer LT15
-                </span>
+            {spotlightPhotos.map((photo) => (
+              <div 
+                key={photo.id}
+                onClick={() => onNavigate('gallery')}
+                className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F2016] border border-[#2A4D37] hover:border-[#E2C08D] transition-all flex flex-col justify-between"
+              >
+                <div className="h-48 overflow-hidden relative">
+                  <img
+                    src={photo.url}
+                    alt={photo.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/arthco_sawmill_yard.jpg';
+                    }}
+                  />
+                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/75 text-[#E2C08D] text-[10px] uppercase font-bold backdrop-blur-xs">
+                    {photo.highlight || photo.categoryLabel || 'Sawmill'}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <h3 className="text-xs font-bold text-white group-hover:text-[#E2C08D] transition-colors truncate">
+                    {photo.title}
+                  </h3>
+                  <p className="text-[11px] text-[#8CB49C] mt-0.5 line-clamp-1">
+                    {photo.description || 'Authentic on-site milling photography'}
+                  </p>
+                </div>
               </div>
-              <div className="p-3">
-                <h3 className="text-xs font-bold text-white group-hover:text-[#E2C08D] transition-colors">
-                  LT15 Carriage & Shelter
-                </h3>
-                <p className="text-[11px] text-[#8CB49C] mt-0.5">Precision thin-kerf band saw</p>
-              </div>
-            </div>
-
-            <div 
-              onClick={() => onNavigate('gallery')}
-              className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F2016] border border-[#2A4D37] hover:border-[#E2C08D] transition-all"
-            >
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  src="/images/arthco_sawmill_yard.jpg"
-                  alt="Arthco sawmill yard with mountains in Mutare"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[#E2C08D] text-[10px] uppercase font-bold backdrop-blur-sm">
-                  Mutare Yard
-                </span>
-              </div>
-              <div className="p-3">
-                <h3 className="text-xs font-bold text-white group-hover:text-[#E2C08D] transition-colors">
-                  Nyakamete Timber Yard
-                </h3>
-                <p className="text-[11px] text-[#8CB49C] mt-0.5">Sawdust mounds & mountains</p>
-              </div>
-            </div>
-
-            <div 
-              onClick={() => onNavigate('gallery')}
-              className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F2016] border border-[#2A4D37] hover:border-[#E2C08D] transition-all"
-            >
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  src="/images/arthco_milled_timber.jpg"
-                  alt="Freshly cut timber planks on sawmill bed"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[#E2C08D] text-[10px] uppercase font-bold backdrop-blur-sm">
-                  Fresh Cut
-                </span>
-              </div>
-              <div className="p-3">
-                <h3 className="text-xs font-bold text-white group-hover:text-[#E2C08D] transition-colors">
-                  Milled Planks on Bed
-                </h3>
-                <p className="text-[11px] text-[#8CB49C] mt-0.5">Clean sliced pine boards</p>
-              </div>
-            </div>
-
-            <div 
-              onClick={() => onNavigate('gallery')}
-              className="group cursor-pointer rounded-xl overflow-hidden bg-[#0F2016] border border-[#2A4D37] hover:border-[#E2C08D] transition-all"
-            >
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  src="/images/arthco_timber_stack.jpg"
-                  alt="Clean stacks of sawn timber"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[#E2C08D] text-[10px] uppercase font-bold backdrop-blur-sm">
-                  Stock Stacks
-                </span>
-              </div>
-              <div className="p-3">
-                <h3 className="text-xs font-bold text-white group-hover:text-[#E2C08D] transition-colors">
-                  Seasoned Pine Stacks
-                </h3>
-                <p className="text-[11px] text-[#8CB49C] mt-0.5">Structural & batten bundles</p>
-              </div>
-            </div>
+            ))}
           </div>
+
+          {/* Featured Sawmill Video Showcase if available */}
+          {featuredVideo && (
+            <div className="mt-8 pt-8 border-t border-[#274B35]">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-[#0E1B13] p-5 sm:p-6 rounded-xl border border-[#23422F]">
+                <div className="space-y-2 max-w-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#C28846] bg-[#243528] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <Video className="w-3 h-3" />
+                      Featured Sawmill Footage
+                    </span>
+                    {featuredVideo.duration && (
+                      <span className="text-[11px] text-[#8CB49C]">
+                        {featuredVideo.duration}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-white">
+                    {featuredVideo.title}
+                  </h3>
+                  <p className="text-xs text-[#A7C8B4] leading-relaxed">
+                    {featuredVideo.description || 'Watch our Wood-Mizer thin-kerf band saw slicing quality pine and gum logs in Mutare, Zimbabwe.'}
+                  </p>
+                  <button
+                    onClick={() => onNavigate('gallery')}
+                    className="inline-flex items-center text-xs font-bold text-[#E2C08D] hover:underline pt-1"
+                  >
+                    View more videos in Gallery archive
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </button>
+                </div>
+
+                <div className="w-full lg:w-80 shrink-0 aspect-video rounded-lg overflow-hidden bg-black border border-[#2E543D] shadow-md">
+                  {featuredVideo.embedUrl ? (
+                    <iframe
+                      src={featuredVideo.embedUrl}
+                      title={featuredVideo.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div 
+                      onClick={() => onNavigate('gallery')}
+                      className="w-full h-full relative cursor-pointer group flex items-center justify-center"
+                    >
+                      <img
+                        src={featuredVideo.thumbnailUrl || '/images/arthco_woodmizer_lt15.jpg'}
+                        alt={featuredVideo.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="w-10 h-10 rounded-full bg-white/90 text-[#14261C] flex items-center justify-center shadow">
+                        <Play className="w-5 h-5 fill-current translate-x-0.5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

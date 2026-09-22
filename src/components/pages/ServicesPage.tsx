@@ -1,6 +1,7 @@
 import React from 'react';
 import { PageId } from '../../types';
-import { SERVICES_LIST, TIMBER_SPECS_GUIDE, COMPANY_INFO } from '../../data/timberData';
+import { COMPANY_INFO } from '../../data/timberData';
+import { useData } from '../../context/DataContext';
 import { TimberCalculator } from '../TimberCalculator';
 import { 
   TreePine, 
@@ -12,7 +13,8 @@ import {
   CheckCircle, 
   Phone, 
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Ruler
 } from 'lucide-react';
 
 interface ServicesPageProps {
@@ -20,6 +22,9 @@ interface ServicesPageProps {
 }
 
 export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
+  const { services, dimensions } = useData();
+  const activeServices = services.filter((s) => s.active !== false);
+
   const getServiceIcon = (icon: string) => {
     switch (icon) {
       case 'Trees': return <TreePine className="w-6 h-6 text-[#1E432E]" />;
@@ -54,10 +59,10 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Services Grid */}
+      {/* Services Grid (Dynamic from DataContext) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {SERVICES_LIST.map((srv) => (
+          {activeServices.map((srv) => (
             <div
               key={srv.id}
               className="bg-white rounded-xl border border-[#D8E3DC] overflow-hidden shadow-sm hover:shadow-md hover:border-[#2C593F] transition-all flex flex-col justify-between"
@@ -68,7 +73,9 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
                     src={srv.image}
                     alt={srv.title}
                     className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/arthco_sawmill_yard.jpg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-3 flex items-center space-x-2">
@@ -89,19 +96,21 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
                     {srv.description}
                   </p>
 
-                  <div className="border-t border-[#E8EFEA] pt-4">
-                    <span className="text-xs font-bold text-[#1E3B2A] uppercase tracking-wide block mb-2">
-                      Key Highlights:
-                    </span>
-                    <ul className="space-y-1.5 text-xs text-[#4F6859]">
-                      {srv.bulletPoints.map((bp, i) => (
-                        <li key={i} className="flex items-start">
-                          <CheckCircle className="w-3.5 h-3.5 text-[#2C593F] mr-2 shrink-0 mt-0.5" />
-                          <span>{bp}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {srv.bulletPoints && srv.bulletPoints.length > 0 && (
+                    <div className="border-t border-[#E8EFEA] pt-4">
+                      <span className="text-xs font-bold text-[#1E3B2A] uppercase tracking-wide block mb-2">
+                        Key Highlights:
+                      </span>
+                      <ul className="space-y-1.5 text-xs text-[#4F6859]">
+                        {srv.bulletPoints.map((bp, i) => (
+                          <li key={i} className="flex items-start">
+                            <CheckCircle className="w-3.5 h-3.5 text-[#2C593F] mr-2 shrink-0 mt-0.5" />
+                            <span>{bp}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -148,137 +157,93 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
                 </div>
                 <div className="bg-[#1F3D2C] p-3 rounded-lg border border-[#2D583F]">
                   <span className="font-bold text-white block mb-0.5">Custom Beam Capabilities</span>
-                  <span className="text-[#A2C4AF]">Able to break down large log diameters into custom length timbers.</span>
+                  <span className="text-[#A2C4AF]">Ability to saw specialized architectural balks up to 6.5m lengths.</span>
                 </div>
               </div>
             </div>
 
-            <div className="lg:col-span-5 space-y-4">
-              <div className="rounded-xl overflow-hidden border border-[#2D583F] shadow-lg relative h-48 sm:h-56">
-                <img
-                  src="/images/arthco_woodmizer_lt15.jpg"
-                  alt="Wood-Mizer LT15 Sawmill at Nyakamete Mutare"
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <span className="text-[10px] text-[#E2C08D] font-bold uppercase tracking-wider block">
-                    Sawmill Equipment
-                  </span>
-                  <h4 className="text-sm font-bold text-white">
-                    Wood-Mizer LT15 at Nyakamete Yard
-                  </h4>
+            <div className="lg:col-span-5">
+              <div className="bg-[#112419] p-6 rounded-xl border border-[#294B37] space-y-4">
+                <div className="flex items-center space-x-2 text-[#E2C08D]">
+                  <ShieldCheck className="w-5 h-5" />
+                  <span className="font-bold text-sm tracking-wide">Sawmill Machine Specs</span>
                 </div>
-              </div>
-
-              <div className="bg-[#122419] p-5 rounded-xl border border-[#2A4B36] space-y-3">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Timber Grading Standards
-                </h3>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between p-2 rounded bg-[#1A3324]">
-                    <span className="font-medium text-white">Wet-Off-Saw (WOS)</span>
-                    <span className="text-[#E2C08D]">Available immediately</span>
+                <div className="space-y-2 text-xs text-[#B9D2C3]">
+                  <div className="flex justify-between py-1.5 border-b border-[#1E3B2A]">
+                    <span className="text-[#7A9C86]">Equipment:</span>
+                    <span className="font-semibold text-white">Wood-Mizer LT15 Band Saw</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded bg-[#1A3324]">
-                    <span className="font-medium text-white">Air-Seasoned Pine</span>
-                    <span className="text-[#E2C08D]">Even moisture loss</span>
+                  <div className="flex justify-between py-1.5 border-b border-[#1E3B2A]">
+                    <span className="text-[#7A9C86]">Max Log Diameter:</span>
+                    <span className="font-semibold text-white">71 cm (28 inches)</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded bg-[#1A3324]">
-                    <span className="font-medium text-white">Structural Grade S5/S7</span>
-                    <span className="text-[#E2C08D]">Load-bearing certified</span>
+                  <div className="flex justify-between py-1.5 border-b border-[#1E3B2A]">
+                    <span className="text-[#7A9C86]">Cutting Length:</span>
+                    <span className="font-semibold text-white">5.4m standard (extendable to 7.2m)</span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-[#1E3B2A]">
+                    <span className="text-[#7A9C86]">Blade Kerf:</span>
+                    <span className="font-semibold text-white">1.5mm - 2.0mm ultra-thin kerf</span>
+                  </div>
+                  <div className="flex justify-between py-1.5">
+                    <span className="text-[#7A9C86]">Operator Certification:</span>
+                    <span className="font-semibold text-white">Certified Saw Technicians</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => onNavigate('contact')}
-                  className="w-full py-2.5 rounded-lg bg-[#C28846] hover:bg-[#D49855] text-[#142318] font-bold text-xs uppercase tracking-wider transition-colors"
-                >
-                  Inquire About Custom Sawing
-                </button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* STANDARD TIMBER SPECIFICATIONS TABLE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <span className="text-xs uppercase tracking-widest text-[#C28846] font-bold">
-            Standard Sizing Reference
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#14261C] mt-1">
-            Common Dimensions Produced at Arthco
-          </h2>
-          <p className="text-sm text-[#4E6657] mt-1">
-            We manufacture both standard industry cross-sections and bespoke sizes upon request.
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-[#D8E3DC] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-[#F2F6F3] text-[#1B3626] uppercase text-[11px] font-bold tracking-wider border-b border-[#DEE7E2]">
-                <tr>
-                  <th className="px-6 py-4">Timber Product Category</th>
-                  <th className="px-6 py-4">Standard Dimensions (mm)</th>
-                  <th className="px-6 py-4">Standard Lengths</th>
-                  <th className="px-6 py-4">Primary Application</th>
-                  <th className="px-6 py-4 text-right">Order Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#EBF1ED] text-[#3A5043]">
-                {TIMBER_SPECS_GUIDE.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-[#F9FAF9] transition-colors">
-                    <td className="px-6 py-4 font-bold text-[#14261C]">
-                      {item.title}
-                    </td>
-                    <td className="px-6 py-4 font-mono font-semibold text-[#1E432E]">
-                      {item.dimension}
-                    </td>
-                    <td className="px-6 py-4">
-                      {item.commonLengths}
-                    </td>
-                    <td className="px-6 py-4 text-xs">
-                      {item.idealFor}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => onNavigate('contact')}
-                        className="text-xs font-bold text-[#C28846] hover:text-[#9A6224] transition-colors"
-                      >
-                        Inquire →
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* INTERACTIVE TIMBER CALCULATOR */}
+      {/* Interactive Timber Volume & Dimension Calculator */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <TimberCalculator />
       </section>
 
-      {/* CONTACT STRIP */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <div className="bg-[#152B1E] text-white p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-[#274B35]">
-          <div>
-            <h3 className="text-xl font-bold">Need a specific timber cut or large volume order?</h3>
-            <p className="text-xs text-[#A8C6B4] mt-1">
-              Contact our sales hotline directly: 0773 412 197 / 0771 744 334 / 0777 076 797
-            </p>
+      {/* Common Dimensions Guide (Dynamic from Backend) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-2xl border border-[#D8E3DC] p-8 sm:p-10 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div>
+              <span className="text-xs uppercase tracking-widest text-[#C28846] font-bold flex items-center gap-1.5">
+                <Ruler className="w-3.5 h-3.5" />
+                Live Milling Specifications
+              </span>
+              <h2 className="text-2xl font-bold text-[#14261C] mt-1">
+                Common Zimbabwe Structural Timber Dimensions
+              </h2>
+              <p className="text-xs text-[#526B5C] mt-1">
+                Standard nominal sizes milled wet-off-saw and seasoned at Arthco Timbers. Managed in real time via backend control.
+              </p>
+            </div>
+            <button
+              onClick={() => onNavigate('contact')}
+              className="text-xs font-bold text-[#2C593F] hover:underline"
+            >
+              Order Custom Cut Dimension →
+            </button>
           </div>
-          <button
-            onClick={() => onNavigate('contact')}
-            className="px-6 py-3 rounded-lg bg-[#C28846] hover:bg-[#D49855] text-[#142318] font-bold text-xs uppercase tracking-wider transition-colors shrink-0"
-          >
-            Contact Sales Team
-          </button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {dimensions.map((dim) => (
+              <div key={dim.id} className="p-4 rounded-xl border border-[#E3ECE6] bg-[#FAFCFA] flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-bold text-[#14261C] font-mono">{dim.dimension}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#EBF3ED] text-[#2C593F]">
+                      {dim.title}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#526B5C] mb-2">{dim.idealFor}</p>
+                </div>
+                <div className="text-[11px] text-[#7A9986] flex items-center justify-between border-t border-[#E8EFEA] pt-1.5">
+                  <span>Stock Lengths:</span>
+                  <span className="font-semibold text-[#20402E]">{dim.standardLengths}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PageId } from '../types';
 import { COMPANY_INFO } from '../data/timberData';
-import { Phone, Menu, X, ArrowRight, TreePine, HardHat } from 'lucide-react';
+import { Phone, Menu, X, ArrowRight, TreePine } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageId;
@@ -33,7 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-50 bg-[#16291E]/95 backdrop-blur-md text-white border-b border-[#2A4837] transition-all duration-200">
-      {/* Top emergency and location micro-bar */}
+      {/* Top emergency, location, and backend access micro-bar */}
       <div className="hidden sm:block bg-[#0F1E15] text-[#A8C7B4] text-xs py-1.5 px-4 sm:px-6 lg:px-8 border-b border-[#1D3526]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -44,19 +44,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-[#5E7A68]">|</span>
             <span className="text-[#D0DFD6]">Direct Mill Dispatch & Wholesale Supply</span>
           </div>
+
           <div className="flex items-center space-x-4">
-            <span className="text-[#A8C7B4]">Sales Hotlines:</span>
-            <a href="tel:0773412197" className="hover:text-white font-medium text-[#E2C08D] transition-colors">
-              0773 412 197
-            </a>
-            <span className="text-[#5E7A68]">/</span>
-            <a href="tel:0771744334" className="hover:text-white transition-colors">
-              0771 744 334
-            </a>
-            <span className="text-[#5E7A68]">/</span>
-            <a href="tel:0777076797" className="hover:text-white transition-colors">
-              0777 076 797
-            </a>
+            <div className="flex items-center space-x-2">
+              <span className="text-[#A8C7B4]">Hotlines:</span>
+              <a href="tel:0773412197" className="hover:text-white font-medium text-[#E2C08D] transition-colors">
+                0773 412 197
+              </a>
+              <span className="text-[#5E7A68]">/</span>
+              <a href="tel:0771744334" className="hover:text-white transition-colors">
+                0771 744 334
+              </a>
+            </div>
           </div>
         </div>
       </div>
