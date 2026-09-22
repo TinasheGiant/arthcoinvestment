@@ -1,0 +1,6 @@
+{
+  "name": "Arthco Investments - Timber Producer",
+  "description": "Arthco Timbers: For your quality timber. A rapidly growing timber producer in Mutare, Zimbabwe: harvesting, transporting, and processing logs into premium sawn timber for wholesale and retail supply.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

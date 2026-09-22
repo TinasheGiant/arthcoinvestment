@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <!-- Background with rounded corners -->
+  <rect x="20" y="20" width="460" height="460" rx="70" ry="70" fill="#FFFFFF" stroke="#0F5B9E" stroke-width="26" />
+  
+  <!-- Outer Blue Box at Bottom for "timbers" -->
+  <path d="M 33 370 L 467 370 L 467 410 C 467 448 440 467 400 467 L 100 467 C 60 467 33 448 33 410 Z" fill="#0F5B9E" />
+  
+  <!-- The Stylized 'A' Pine Tree Emblem -->
+  <!-- Outer Pine Tree / Letter A structure -->
+  <g fill="#0F5B9E">
+    <!-- Top Apex and Layered Tree Branches -->
+    <path d="
+      M 250 65 
+      L 272 105 L 260 108 L 285 145 L 268 148 L 315 210 L 292 214 L 365 290 
+      L 315 290 
+      L 295 240 
+      L 205 240 
+      L 185 290 
+      L 135 290 
+      L 208 214 L 185 210 L 232 148 L 215 145 L 240 108 L 228 105 Z
+    " />
+    
+    <!-- Crossbar and lower tree base -->
+    <path d="M 190 225 L 310 225 L 295 260 L 205 260 Z" />
+
+    <!-- Center inner pine tree silhouette inside the A opening -->
+    <!-- Triangular inner cutout in white -->
+    <polygon points="250,158 285,225 215,225" fill="#FFFFFF" />
+    
+    <!-- Small blue pine tree in the cutout -->
+    <path d="
+      M 250 175 
+      L 262 195 L 256 196 L 268 216 L 254 216 
+      L 254 240 L 246 240 L 246 216 
+      L 232 216 L 244 196 L 238 195 Z
+    " fill="#0F5B9E" />
+    
+    <!-- Small tree base beneath crossbar -->
+    <rect x="245" y="248" width="10" height="28" fill="#0F5B9E" />
+    <path d="M 230 252 L 270 252 L 260 262 L 240 262 Z" fill="#0F5B9E" />
+  </g>
+
+  <!-- "arthco" text -->
+  <text 
+    x="250" 
+    y="360" 
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+    font-size="76" 
+    font-weight="800" 
+    letter-spacing="-1.5" 
+    fill="#0F5B9E" 
+    text-anchor="middle"
+  >arthco</text>
+
+  <!-- "timbers" text in bottom container -->
+  <text 
+    x="250" 
+    y="442" 
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" 
+    font-size="62" 
+    font-weight="300" 
+    letter-spacing="5" 
+    fill="#FFFFFF" 
+    text-anchor="middle"
+  >timbers</text>
+</svg>
